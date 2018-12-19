@@ -39,42 +39,48 @@ document.addEventListener('DOMContentLoaded', () => {
       element[property] = value;
       return element;
     }
+
+    function appendToLI(elementName, property, value) {
+      const element = createElement(elementName, property, value);
+      li.appendChild(element);
+      return element;
+    }
     const li = document.createElement('li');
 
-    const span = createElement('span', 'textContent', text);
-    span.textContent = text;
+    appendToLI('span', 'textContent', text);
 
-    li.appendChild(span);
-
-    const label = createElement('label', 'textContent', 'Confirmed');
-    label.textContent = 'Confirmed';
+    appendToLI('label', 'textContent', 'Confirmed')
+      .appendChild(createElement('input', 'type', 'checkbox'));
   
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-
-    label.appendChild(checkbox);
-    li.appendChild(label);  
+    appendToLI('button', 'textContent', 'edit');
   
-    const editButton = document.createElement('button');
-    editButton.textContent = 'edit';
-
-    li.appendChild(editButton);
-  
-    const removeButton = document.createElement('button');
-    removeButton.textContent = 'remove';
-
-    li.appendChild(removeButton);
+    appendToLI('button', 'textContent', 'remove');
   
     return li;
   }
+
+  function alertEmptyString() {
+    alert('Please do not enter empty strings');
+  }
   
   form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const text = input.value;
-    input.value = '';
-    const li = createLI(text);
-    ul.appendChild(li);
+    if (input.value !== '') {
+      e.preventDefault();
+      const text = input.value;
+      input.value = '';
+      const li = createLI(text);
+      ul.appendChild(li);
+    } else {
+      alertEmptyString();
+    }
   });
+  // form.addEventListener('submit', (e) => {
+  //   e.preventDefault();
+  //   const text = input.value;
+  //   input.value = '';
+  //   const li = createLI(text);
+  //   ul.appendChild(li);
+  // });
     
   ul.addEventListener('change', (e) => {
     const checkbox = event.target;
@@ -93,25 +99,37 @@ document.addEventListener('DOMContentLoaded', () => {
       const button = e.target;
       const li = button.parentNode;
       const ul = li.parentNode;
-      if (button.textContent === 'remove') {
-        ul.removeChild(li);
-      } else if (button.textContent === 'edit') {
-        const span = li.querySelector('span');
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.value = span.textContent;
-        li.insertBefore(input, span);
-        input.focus();
-        li.removeChild(span);
-        button.textContent = 'save';
-      } else if (button.textContent === 'save') {
-        const input = li.querySelector('input');
-        const span = document.createElement('span');
-        span.textContent = input.value;
-        li.insertBefore(span, input);
-        li.removeChild(input);
-        button.textContent = 'edit';
+      const action = button.textContent;
+
+      const namedActions = {
+        remove: () => {
+          ul.removeChild(li);
+        },
+        edit: () => {
+          const span = li.querySelector('span');
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.value = span.textContent;
+          li.insertBefore(input, span);
+          input.focus();
+          li.removeChild(span);
+          button.textContent = 'save';
+        },
+        save: () => {
+          const input = li.querySelector('input');
+          if (input.value === '') {
+            alertEmptyString();
+          } else {
+            const span = document.createElement('span');
+            span.textContent = input.value;
+            li.insertBefore(span, input);
+            li.removeChild(input);
+            button.textContent = 'edit';
+          }
+        }
       }
+      // select and run action in button's name
+      namedActions[action]();
     }
   });
 });
